@@ -97,11 +97,19 @@ class DeepQNetwork:
         # 初始化 tensorflow 会话。
         self.session = tf.InteractiveSession()
 
+        self.output_graph = True
+
+        if self.output_graph:
+            # $ tensorboard --logdir=logs
+            # tf.train.SummaryWriter soon be deprecated, use following
+            tf.summary.FileWriter("logs/", self.session.graph)
+
         # 初始化 tensorflow 参数。
         self.session.run(tf.global_variables_initializer())
 
         # 记录所有 loss 变化。
         self.cost_his = []
+
 
     def create_network(self):
         """
@@ -126,7 +134,7 @@ class DeepQNetwork:
         self.loss = tf.reduce_mean(tf.square((self.q_target - self.reward_action)))
         self.train_op = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.loss)
 
-        self.predict = tf.argmax(self.q_eval, 1)
+        # self.predict = tf.argmax(self.q_eval, 1)
 
     def select_action(self, state_index):
         """
@@ -239,6 +247,10 @@ class DeepQNetwork:
         # q_next：下一个状态的 Q 值。
         # TODO : 很重要的一部分 下面很长的一部分要搞清楚
         q_next = self.session.run([self.q_eval], feed_dict={self.q_eval_input: batch_next_state})
+        # !!!!!!q_next属性是[array([[],[]],dtype=float32)]  q_next是列表
+        # 所以下面先用q_next[0]，然后再是第i样本数据
+
+        # print("q_next:::::", q_next)
 
         q_target = []
         for i in range(len(minibatch)):
@@ -261,13 +273,15 @@ class DeepQNetwork:
                                            feed_dict={self.q_eval_input: batch_state,
                                                       self.action_input: batch_action,
                                                       self.q_target: q_target})
+        # 这里赋值的话，直接就是cost的值是loss，reward值是reward_action, 随机抽取20个批量样本进行训练
+
 
         self.cost_his.append(cost)
 
         # if self.step_index % 1000 == 0:
         #     print("loss:", cost)
 
-        self.learn_step_counter += 1
+        self.learn_step_counter += 1  # learn_step_counter是训练步数统计
 
     def train(self):
         """
@@ -275,6 +289,7 @@ class DeepQNetwork:
         :return:
         """
         # 初始化当前状态。
+        # 一开始初始化就排除了终止状态，从非终止状态中选择开始状态
         current_state = np.random.randint(0, self.action_num - 1)
         self.epsilon = self.INITIAL_EPSILON
 

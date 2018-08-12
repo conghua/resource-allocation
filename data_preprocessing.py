@@ -14,6 +14,7 @@ data_list = []
 for x in data_dict:
     #  taskID ,arrival time, duration time, peak cpu, peak memory
     #  string, int ,  int,  float, float
+    pass
     one_data_bar = [0, 0, 0, 0, 0]
     one_data_bar[0] = x
     temp_same_task_time_list = []
