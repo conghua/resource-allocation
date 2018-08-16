@@ -106,7 +106,7 @@ def get_figure_data_random_method(JOB_LENGTH):
     # 服务器上面运行的任务，key是每个服务器的index，value是在此服务器上执行的job
     cluster_running_job = {}
 
-    while time_i < 2500:
+    while True:
 
         # 调用函数getJobsThisTime，返回当前时间到达的任务，加入任务等待队列
         job_broker = get_jobs_this_time(time_i, job_broker, job)
@@ -123,6 +123,9 @@ def get_figure_data_random_method(JOB_LENGTH):
             allocate_job_to_cluster(job_broker, cluster_index_list, cluster, time_i, cluster_running_job)
 
         time_i += 1
+
+        if time_i > JOB_LENGTH + 2 and job_broker == []:
+            break
 
     return sum_job_latency
 
