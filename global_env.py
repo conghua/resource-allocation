@@ -68,25 +68,28 @@ def update_cluster_state(cluster_index_list, cluster_running_job, time_i, cluste
 def allocate_job_to_cluster(job_broker, cluster_index_list, cluster, time_i, cluster_running_job):
     # 分配任务到各个服务器
     # 对于每个服务器，更新他们的任务列表，资源信息
-    while not job_broker == []:
-        single_job = job_broker[0]
-        cluster_index = random.choice(cluster_index_list)
-        if single_job[3] <= cluster[cluster_index][0] and single_job[4] <= cluster[cluster_index][1]:
-            cluster[cluster_index][0] -= single_job[3]
-            cluster[cluster_index][1] -= single_job[4]
-            # ready_job [到达时间，ID，结束时间，需要CPU，需要的memory]：把第三项改成结束时间
-            ready_job = single_job
-            ready_job[2] = time_i + single_job[2]
-            # 注意：其实这里列表，single_job和ready_job指针指向内容一样了，single_job内容也变了
-            temp = cluster_running_job.get(cluster_index, None)
-            if temp is None:
-                cluster_running_job[cluster_index] = []
-                cluster_running_job[cluster_index].append(ready_job)
+    if not job_broker == []:
+        job_broker_job_index = 0
+        LEN = len(job_broker)
+        for i in range(LEN):
+            single_job = job_broker[job_broker_job_index]
+            cluster_index = random.choice(cluster_index_list)
+            if single_job[3] <= cluster[cluster_index][0] and single_job[4] <= cluster[cluster_index][1]:
+                cluster[cluster_index][0] -= single_job[3]
+                cluster[cluster_index][1] -= single_job[4]
+                # ready_job [到达时间，ID，结束时间，需要CPU，需要的memory]：把第三项改成结束时间
+                ready_job = single_job
+                ready_job[2] = time_i + single_job[2]
+                # 注意：其实这里列表，single_job和ready_job指针指向内容一样了，single_job内容也变了
+                temp = cluster_running_job.get(cluster_index, None)
+                if temp is None:
+                    cluster_running_job[cluster_index] = []
+                    cluster_running_job[cluster_index].append(ready_job)
+                else:
+                    cluster_running_job[cluster_index].append(ready_job)
+                job_broker.pop(job_broker_job_index)
             else:
-                cluster_running_job[cluster_index].append(ready_job)
-            job_broker.pop(0)
-        else:
-            break
+                job_broker_job_index += 1
     return job_broker, cluster, cluster_running_job
 
 
